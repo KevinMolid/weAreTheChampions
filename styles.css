@@ -118,9 +118,18 @@ button:active {
   padding: 0;
 }
 
+.likes {
+  margin:0;
+  display: inline;
+}
+
 a {
   color: #444056;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   text-decoration: none;
+}
+
+.name {
+  color: #28A9F1;
 }

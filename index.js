@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
+import { getDatabase, ref, update, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"
 
 const appSettings = {
   databaseURL: "https://realtime-database-1944c-default-rtdb.europe-west1.firebasedatabase.app/"
@@ -40,7 +40,8 @@ publishBtn.addEventListener("click", function() {
   let msgObject = {
     msg: inputValue,
     to: toValue,
-    from: fromValue
+    from: fromValue,
+    likes: 0
   }
 
   clearInput()
@@ -66,22 +67,45 @@ function addToMessages(msg) {
   let msgValue = msgObject.msg
   let msgTo = msgObject.to
   let msgFrom = msgObject.from
+  let msgLikes = msgObject.likes
 
-  let newEl = document.createElement("div")
-  newEl.className = "messageDiv";
+  let msgEl = document.createElement("div")
+  msgEl.className = "messageDiv";
 
-  newEl.addEventListener("dblclick", function() {
+  msgEl.addEventListener("dblclick", function() {
     let exactLocationOfMsgInDB = ref(database, `msgList/${msgID}`)
+    /*remove(exactLocationOfMsgInDB)
+    console.log(`${msgValue} removed from database`)*/
 
-    remove(exactLocationOfMsgInDB)
-    console.log(`${msgValue} removed from database`)
+    let newLikes = msgLikes + 1
+
+    /* Update likes in DB */
+    const updates = {}
+    updates['/msgList/' + msgID] = {
+      msg: msgValue,
+      to: msgTo,
+      from: msgFrom,
+      likes: newLikes
+    }
+
+    return update(ref(database), updates);
+
   })
 
-  newEl.innerHTML = `
-    <p>To <strong>${msgTo}</strong></p>
+  msgEl.innerHTML = `
+    <p>To <strong class="name">${msgTo}</strong></p>
     <p>${msgValue}</p>
-    <p>From <strong>${msgFrom}</strong></p>
   `
 
-  msgContainer.prepend(newEl)
+  /* If likes, show likes */
+  if (msgLikes > 0) {
+    msgEl.innerHTML += `<div style="display: flex; justify-content: space-between;">
+      <div>From <strong class="name">${msgFrom}</strong></div>
+      <div>🔥<strong>${msgLikes}</strong></div>
+      </div>`
+  } else {
+    msgEl.innerHTML += `<p>From <strong class="name">${msgFrom}</strong></p>`
+  }
+
+  msgContainer.prepend(msgEl)
 }
